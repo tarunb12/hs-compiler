@@ -20,8 +20,9 @@ main :: IO ()
 main = do
     args <- getArgs
     case args of
-        ["-h"]              -> putStrLn "o"
+        ["-h"]              -> putStrLn help
+        ["-t"]              -> putStrLn "o"
         [cmd]               -> putStrLn $ strip cmd
         [cmd, path]         -> putStrLn $ strip path
-        [cmd, src, dest]   -> putStrLn $ strip dest
+        [cmd, src, dest]    -> putStrLn $ strip dest
         _                   -> putStrLn help
