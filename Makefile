@@ -1,3 +1,5 @@
+PROJECT_NAME=hs-compiler
+
 build:
 	cabal new-build
-	cp ./dist-newstyle/build/**/**/**/x/hs-compiler/build/hs-compiler/hs-compiler .
+	cp ./dist-newstyle/build/**/**/**/x/$(PROJECT_NAME)/build/$(PROJECT_NAME)/$(PROJECT_NAME) .
