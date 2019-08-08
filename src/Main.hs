@@ -44,7 +44,7 @@ interp = do
     if b == []
         then interp
         else if ":quit" `isInfixOf` b
-            then putStr ""      
+            then return ()    
             else do { putStrLn b
                     ; interp
                     }
