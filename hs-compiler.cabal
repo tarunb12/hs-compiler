@@ -18,7 +18,8 @@ cabal-version:       >=1.10
 
 executable hs-compiler
   main-is:           Main.hs
-  -- other-modules:
+  other-modules:     Ast,
+                     Parser
   -- other-extensions:
   build-depends:     base >=4.11 && <4.12,
                      mtl,

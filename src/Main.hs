@@ -1,10 +1,7 @@
-module Main
-  ( Mode(..)
-  , main
-  ) where
+module Main where
 
 import Data.List
--- import Parser
+import Parser(Mode(..))
 import System.Environment
 import System.IO
 
@@ -12,23 +9,8 @@ import System.IO
 -- integers, etc. but typesafe/typedefs optional, can be specified or inferred, integrate
 -- this system with prolog?
 
-data Mode
-  = Help
-  | TokenPrint String
-  | AstPrint String
-  | StdinStdout
-  | StdinFile String
-  | FileStdout String
-  | FileFile String String
-
-prompt :: String -> IO String
-prompt text = do
-  putStr text
-  hFlush stdout
-  getLine
-
 help :: String
-help = "Usage: ./makefile [-option] <source file> <destination file>\n"
+help = "Usage: ./makefile [-option] <source file?> <destination file?>\n"
   ++ "-option: defaults to \"-css\"\n"
   ++ "\t-t: Print tokens\n"
   ++ "\t-a: Prints AST\n"
@@ -38,29 +20,26 @@ help = "Usage: ./makefile [-option] <source file> <destination file>\n"
   ++ "\t-cff: Compile file to file\n"
   ++ "\t-h: Help"
 
-nstrip :: String -> String
-nstrip str = filter (/= '\n') str
+wstrip :: String -> String
+wstrip str = filter (not . flip elem "\n\t ") str
 
-sstrip :: String -> String
-sstrip str = filter (/= ' ') str
-
-tstrip :: String -> String
-tstrip str = filter (/= '\t') str
-
-interpStdout :: IO ()
-interpStdout = do
-  putStr ">> "
+interpret :: Mode -> IO ()
+interpret StdinStdout = do
+  putStr "λ> "
   hFlush stdout
   a <- getLine
-  let b = nstrip $ sstrip $ tstrip a
+  let b = wstrip a
   if b == []
-    then interpStdout
+    then interpret StdinStdout
     else if ":quit" `isInfixOf` b
       then return ()    
       else do { putStrLn b
-              ; interpStdout
+              ; interpret StdinStdout
               }
 
+interpret (StdinFile f) = do
+  putStr ""
+  
 -- interpFile :: String -> IO ()
 -- interpFile dest =
 
@@ -71,14 +50,13 @@ interpStdout = do
 -- compileFile src dest =
 
 run :: Mode -> IO ()
-run Help            = putStrLn help
+run (Help)          = putStrLn help
 run (TokenPrint f)  = putStrLn "tokens"
 run (AstPrint f)    = putStrLn "ast"
-run StdinStdout     = interpStdout
-run (StdinFile d)   = interpStdout
-run (FileStdout s)  = interpStdout
-run (FileFile s d)  = interpStdout
-run _               = putStrLn help
+run (StdinStdout)   = interpret StdinStdout
+run (StdinFile d)   = interpret StdinStdout
+run (FileStdout s)  = interpret StdinStdout
+run (FileFile s d)  = interpret StdinStdout
 
 main :: IO ()
 main = do

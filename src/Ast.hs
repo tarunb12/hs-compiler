@@ -1,22 +1,27 @@
 module Ast where
 
-data BinOp
+import Prelude
+
+data Binop
   = Pow | Mul | Div -- Power, Multiply, Divide
   | Add | Sub | Mod -- Add, Subtract, Modulo
   | And | Or  | Xor -- And, Or, Xor
   | Eq  | Neq | Lte -- Equality, Inequality, Less than / Equal
   | Lt  | Gte | Gt  -- Less than, Greater than / Equal, Greater than
   | Ls  | Rs        -- Left shift, Right shift
+  deriving (Eq, Show)
 
-data UnOp
+data Unop
   = Not | Neg
+  deriving (Eq, Show)
 
-data Datatype
-  = TInt | TReal | TComplex
+data Primitive
+  = TInt      | TReal | TComplex
   | TRational | TBool | TChar
-  | TString | TUnit | TArr
+  | TString   | TUnit | TArr
+  deriving (Eq, Show)
 
-data Expr
+data Literal 
   = LInt Int
   | LReal Float
   | LComplex Float Float
@@ -24,5 +29,20 @@ data Expr
   | LBool Bool
   | LChar Char
   | LString String
-  | LUnit Unit
-  | LArr Expr List
+  | LUnit ()
+  | LArr [Expr]
+  deriving (Eq, Show)
+
+data Expr
+  = Literal
+  | BinOp Binop Expr Expr
+  | UnOp Unop
+  | Id String
+  | Call String [Expr]
+  | NoExpr
+  deriving (Eq, Show)
+
+data Statement
+  = Block [Statement]
+  | Assign String Expr
+  | Expr Expr
