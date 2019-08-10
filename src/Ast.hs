@@ -34,11 +34,12 @@ data Literal
   deriving (Eq, Show)
 
 data Expr
-  = Literal
+  = Literal Literal
   | BinOp Binop Expr Expr
   | UnOp Unop
   | Id String
   | Call String [Expr]
+  | Parens Expr
   | NoExpr
   deriving (Eq, Show)
 
@@ -46,6 +47,8 @@ data Statement
   = Block [Statement]
   | Assign String Expr
   | Expr Expr
+  deriving (Eq, Show)
 
 data Program
   = Program [Statement]
+  deriving (Eq, Show)
