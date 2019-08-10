@@ -21,7 +21,7 @@ help = "Usage: ./makefile [-option] <source file?> <destination file?>\n"
   ++ "\t-h: Help"
 
 wstrip :: String -> String
-wstrip str = filter (not . flip elem "\n\t ") str
+wstrip str = filter (not . flip elem "\n") str
 
 interpret :: Mode -> IO ()
 interpret StdinStdout = do

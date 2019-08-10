@@ -46,3 +46,6 @@ data Statement
   = Block [Statement]
   | Assign String Expr
   | Expr Expr
+
+data Program
+  = Program [Statement]
