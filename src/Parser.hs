@@ -5,7 +5,7 @@ module Parser
   ) where
 
 import Ast
-import Lexer (Token(..), Parser, boolean, character, id', integer, lexer, lpar, rpar, string')
+import Lexer (Token(..), Parser, boolean, character, id', integer, lexer, lpar, rpar, string', ws)
 
 import Control.Applicative ((<|>), many)
 import Control.Monad ((>=>), void)
@@ -22,6 +22,8 @@ data Mode
   | FileStdout String
   | FileFile String String
   deriving (Eq, Show)
+
+-- do blocks for pattern matching tokens
 
 -- parseExpr :: String -> Mode -> IO Expr
 parseExpr :: String -> IO Program
@@ -74,7 +76,3 @@ str   = string'   >>= \s -> return $ LString s
 
 parens :: Parser a -> Parser a 
 parens = between lpar rpar
-
-skipWs :: Parser a
-skipWs =  newline
-      <|> ws
