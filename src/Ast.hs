@@ -1,7 +1,5 @@
 module Ast where
 
-import Prelude
-
 data Binop
   = Pow | Mul | Div -- Power, Multiply, Divide
   | Add | Sub | Mod -- Add, Subtract, Modulo
@@ -16,9 +14,8 @@ data Unop
   deriving (Eq, Show)
 
 data Primitive
-  = TInt      | TReal | TComplex
-  | TRational | TBool | TChar
-  | TString   | TUnit | TArr
+  = TInt    | TBool | TChar
+  | TString | TUnit | TArr
   deriving (Eq, Show)
 
 data Literal 
@@ -45,10 +42,20 @@ data Expr
 
 data Statement
   = Block [Statement]
-  | Assign String Expr
   | Expr Expr
+  | Return Expr
+  | Assign String Expr
+  | VarDec Primitive String
+  | VarDef Primitive String Expr
+  | FuncDef Primitive String [Statement] [Statement]
+  | If Expr Statement Statement
+  | For Statement Expr Statement
+  | While Expr Statement
+  | Break
+  | Continue
   deriving (Eq, Show)
 
+-- List of (functions or global defs)
 data Program
   = Program [Statement]
   deriving (Eq, Show)

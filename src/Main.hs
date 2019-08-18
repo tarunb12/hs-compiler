@@ -1,6 +1,6 @@
 module Main where
 
-import Interpret(run)
+import Interpret (run)
 
 import Parser (Mode(..))
 
@@ -14,12 +14,12 @@ import System.IO
 main :: IO ()
 main = do
   args <- getArgs
-  case args of
-    ["-h"]              -> run $ Help
-    ["-t", path]        -> run $ TokenPrint path
-    ["-a", path]        -> run $ AstPrint path
-    ["-css"]            -> run $ StdinStdout
-    ["-csf", path]      -> run $ StdinFile path
-    ["-cfs", path]      -> run $ FileStdout path
-    ["-cff", src, dest] -> run $ FileFile src dest
-    _                   -> run $ Help
+  run $ case args of
+    ["-h"]              -> Help
+    ["-t", path]        -> TokenPrint path
+    ["-a", path]        -> AstPrint path
+    ["-css"]            -> StdinStdout
+    ["-csf", path]      -> StdinFile path
+    ["-cfs", path]      -> FileStdout path
+    ["-cff", src, dest] -> FileFile src dest
+    _                   -> Help

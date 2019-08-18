@@ -5,14 +5,13 @@ module Parser
   ) where
 
 import Ast
+import Lexer (Token(..), Parser, boolean, character, id', integer, lexer, lpar, rpar, string')
 
 import Control.Applicative ((<|>), many)
-import Control.Monad (void)
-import Data.Char (isLetter, isDigit)
-import Text.Parsec (parse)
-import Text.Parsec.Char (char, digit, oneOf, satisfy)
-import Text.Parsec.Combinator (eof, many1)
-import Text.Parsec.String (Parser)
+import Control.Monad ((>=>), void)
+import Text.Parsec (ParseError, runParser)
+import Text.Parsec.Char (char, digit, newline, oneOf, satisfy)
+import Text.Parsec.Combinator (between, eof, option, many1)
 
 data Mode
   = Help
@@ -22,75 +21,60 @@ data Mode
   | StdinFile String
   | FileStdout String
   | FileFile String String
-  | Run
   deriving (Eq, Show)
 
-whiteSpace :: Parser ()
-whiteSpace = void $ many $ oneOf " \n\t"
-
-integer :: Parser Expr
-integer = lexeme $ do
-  int <- many1 digit
-  return $ Literal $ LInt $ read int
-
-maybeAdd :: Expr -> Parser Expr
-maybeAdd expr0 = 
-  let add expr0 = do { void $ lexeme $ char '+'
-                     ; expr1 <- expr
-                     ; maybeAdd $ BinOp Add expr0 expr1
-                     }
-  in  add expr0
-  <|> return expr0
-
-variable :: Parser Expr
-variable = 
-  let firstChar = satisfy $ \a -> isLetter a || a == '_'
-      restChar  = satisfy $ \a -> isLetter a || a == '_' || isDigit a
-  in lexeme $ do
-    fst <- firstChar
-    rest <- many restChar
-    return $ Id (fst : rest)
-
-parens :: Parser Expr
-parens = lexeme $ do
-  void $ lexeme $ char '('
-  exp <- expr
-  void $ lexeme $ char ')'
-  return $ Parens exp
-
--- literal :: Parser Literal
--- literal = do
---   int <- integer
-
-literal :: Parser Expr
-literal =  integer
-
-term :: Parser Expr
-term =  literal
-    <|> variable
-    <|> parens
-
-expr :: Parser Expr
-expr = do
-  e <- term
-  maybeAdd e
-
--- Lexer for interpreter
-lexeme :: Parser a -> Parser a
-lexeme parser = do
-  x <- parser
-  whiteSpace
-  return x
-  
 -- parseExpr :: String -> Mode -> IO Expr
-parseExpr :: String -> IO Expr
-parseExpr e = case parse expr "" e of
+parseExpr :: String -> IO Program
+parseExpr e = case parseProg e of
   Left err -> print err >> fail "Failed to parse"
   Right r  -> return r  
 
-parseFile :: String -> IO Expr -- IO Program
+parseFile :: String -> IO Program -- IO Program
 parseFile file = do
   input <- readFile file
-  case parse expr "" input of
+  case parseProg input of
     Left err -> print err >> fail "Failed to parse"
     Right r  -> return r
+
+parseProg :: String -> Either ParseError Program
+parseProg =  runParser (lexer <* eof) () ""
+         >=> runParser (program <* eof) () ""
+
+program :: Parser Program
+program = statement >>= \p -> return $ Program [p]
+
+statement :: Parser Statement
+statement =  expr
+
+-- Parser Statement
+expr :: Parser Statement
+expr = do 
+  e0 <- term 
+  option (Expr e0) (parens expr >>= \e1 -> return e1)
+
+term :: Parser Expr
+term =  var
+    <|> (literal >>= \lit -> return $ Literal lit)
+    <|> parens term
+
+var :: Parser Expr
+var = Id <$> id'
+
+literal :: Parser Literal
+literal =  bool
+       <|> char'
+       <|> int
+       <|> str
+
+bool, char', int, str :: Parser Literal
+bool  = boolean   >>= \b -> return $ LBool b
+char' = character >>= \c -> return $ LChar c
+int   = integer   >>= \i -> return $ LInt i
+str   = string'   >>= \s -> return $ LString s
+
+parens :: Parser a -> Parser a 
+parens = between lpar rpar
+
+skipWs :: Parser a
+skipWs =  newline
+      <|> ws
